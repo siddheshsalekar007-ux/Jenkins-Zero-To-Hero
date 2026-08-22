@@ -1,21 +1,64 @@
 pipeline {
-  agent none
-  stages {
-    stage('Back-end') {
-      agent {
-        docker { image 'maven:3.8.1-adoptopenjdk-11' }
-      }
-      steps {
-        sh 'mvn --version'
-      }
+    agent none
+
+    options {
+        timestamps()
+        timeout(time: 15, unit: 'MINUTES')
+        disableConcurrentBuilds()
     }
-    stage('Front-end') {
-      agent {
-        docker { image 'node:16-alpine' }
-      }
-      steps {
-        sh 'node --version'
-      }
+
+    stages {
+
+        stage('Back-end') {
+            agent {
+                docker {
+                    image 'maven:3.8.1-adoptopenjdk-11'
+                }
+            }
+
+            steps {
+                echo 'Checking Back-end environment'
+
+                sh '''
+                    java -version
+                    mvn --version
+                    mvn clean test
+                '''
+            }
+        }
+
+        stage('Front-end') {
+            agent {
+                docker {
+                    image 'node:22-alpine'
+                }
+            }
+
+            steps {
+                echo 'Checking Front-end environment'
+
+                sh '''
+                    node --version
+                    npm --version
+                    npm ci
+                    npm test
+                '''
+            }
+        }
     }
-  }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Please check the logs.'
+        }
+
+        always {
+            echo "Build Number: ${BUILD_NUMBER}"
+            echo "Build Status: ${currentBuild.currentResult}"
+        }
+    }
 }
