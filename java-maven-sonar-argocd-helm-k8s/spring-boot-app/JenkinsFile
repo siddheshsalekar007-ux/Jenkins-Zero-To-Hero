@@ -57,45 +57,33 @@ pipeline {
         }
       }
     }
-stage('Update Deployment File') {
-    environment {
-        GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
-        GIT_USER_NAME = "siddheshsalekar007-ux"
-    }
+steps {
+    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+        sh '''
+            echo "Current directory:"
+            pwd
 
-    steps {
-        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-            sh '''
-                cd "$WORKSPACE"
+            echo "Workspace:"
+            echo "$WORKSPACE"
 
-                echo "Current directory:"
-                pwd
+            echo "Marking Jenkins workspace as safe:"
+            git config --global --add safe.directory "$WORKSPACE"
 
-                echo "Workspace:"
-                echo "$WORKSPACE"
+            echo "Checking Git repository:"
+            git status
 
-                echo "Marking Jenkins workspace as safe:"
-                git config --global --add safe.directory "$WORKSPACE"
+            git config user.email "siddheshsalekar007@gmail.com"
+            git config user.name "Siddhesh Salekar"
 
-                echo "Checking Git repository:"
-                git status
+            echo "Updating deployment image tag..."
+            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
-                git config user.email "siddheshsalekar007@gmail.com"
-                git config user.name "Siddhesh Salekar"
+            git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
-                echo "Updating deployment image tag..."
+            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
 
-                sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" \
-                java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-
-                git add \
-                java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
-
-                git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
-
-                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-            '''
-        }
+            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
+        '''
     }
 }
   }
