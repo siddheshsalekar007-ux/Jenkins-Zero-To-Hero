@@ -3,6 +3,7 @@ pipeline {
     docker {
       image 'siddhesh683/maven-siddhesh-docker-agent:v1'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+      reuseNode true
     }
   }
   stages {
@@ -64,6 +65,14 @@ pipeline {
         steps {
             withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 sh '''
+                    echo "Current directory:"
+                    pwd
+
+                    echo "Workspace:"
+                    echo "$WORKSPACE"
+
+                    echo "Checking Git repository:"
+                    git status
                     git config user.email "siddheshsalekar007@gmail.com"
                     git config user.name "Siddhesh Salekar"
                     BUILD_NUMBER=${BUILD_NUMBER}
