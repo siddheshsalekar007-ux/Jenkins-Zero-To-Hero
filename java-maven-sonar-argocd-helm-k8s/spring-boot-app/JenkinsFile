@@ -74,7 +74,7 @@ stage('Update Deployment File') {
                 echo "Workspace:"
                 echo "$WORKSPACE"
 
-                echo "Adding workspace as safe Git directory:"
+                echo "Marking Jenkins workspace as safe:"
                 git config --global --add safe.directory "$WORKSPACE"
 
                 echo "Checking Git repository:"
@@ -83,10 +83,13 @@ stage('Update Deployment File') {
                 git config user.email "siddheshsalekar007@gmail.com"
                 git config user.name "Siddhesh Salekar"
 
+                echo "Updating deployment image tag..."
+
                 sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" \
                 java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
-                git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+                git add \
+                java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
                 git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
 
