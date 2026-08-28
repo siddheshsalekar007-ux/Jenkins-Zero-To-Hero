@@ -57,9 +57,14 @@ pipeline {
         }
       }
     }
-steps {
-    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-        sh '''
+stage('Update Deployment File') {
+    environment {
+        GIT_REPO_NAME = "Jenkins-Zero-To-Hero"
+        GIT_USER_NAME = "siddheshsalekar007-ux"
+    }
+
+    steps {
+        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
             echo "Current directory:"
             pwd
 
@@ -84,6 +89,7 @@ steps {
 
             git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
         '''
+        }
     }
 }
   }
