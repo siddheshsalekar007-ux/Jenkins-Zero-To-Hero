@@ -65,22 +65,25 @@ stage('Update Deployment File') {
 
     steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-            echo "Current directory:"
-            pwd
+            sh '''
+                cd "$WORKSPACE"
 
-            echo "Workspace:"
-            echo "$WORKSPACE"
+                echo "Current directory:"
+                pwd
 
-            echo "Marking Jenkins workspace as safe:"
-            git config --global --add safe.directory "$WORKSPACE"
+                echo "Workspace:"
+                echo "$WORKSPACE"
 
-            echo "Checking Git repository:"
-            git status
+                echo "Adding workspace as safe Git directory:"
+                git config --global --add safe.directory "$WORKSPACE"
 
-            git config user.email "siddheshsalekar007@gmail.com"
-            git config user.name "Siddhesh Salekar"
+                echo "Checking Git repository:"
+                git status
 
-            echo "Updating deployment image tag..."
+                git config user.email "siddheshsalekar007@gmail.com"
+                git config user.name "Siddhesh Salekar"
+
+                echo "Updating deployment image tag..."
             sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
             git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
